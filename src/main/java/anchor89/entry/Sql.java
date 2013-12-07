@@ -42,7 +42,7 @@ public class Sql implements GenerateFromElement {
 
   @Override
   public String toString() {
-    String result = String.format("<sql><do>%s</do><undo>%s</undo></sql>", doSql, undoSql);
+    String result = String.format("do:%s;undo:%s", doSql, undoSql);
     return result;
   }
 }

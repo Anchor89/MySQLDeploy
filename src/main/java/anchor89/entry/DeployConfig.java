@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import anchor89.util.C;
+import anchor89.util.FileHelper;
 
 public class DeployConfig {
   final private static Logger logger = LogManager.getLogger(DeployConfig.class);
@@ -21,8 +22,10 @@ public class DeployConfig {
   Servers servers = new Servers();
   Tasks tasks = new Tasks();
   
-  public DeployConfig(String filename) {
-    parseFile(filename);
+  public DeployConfig(String filepath) {
+    if (!parseFile(filepath)) {
+      throw new IllegalArgumentException("Error in loading config file:" + filepath);
+    }
   }
   
   public Servers getServers() {
@@ -33,14 +36,14 @@ public class DeployConfig {
     return tasks;
   }
 
-  public boolean parseFile(String filename) {
+  public boolean parseFile(String filepath) {
     boolean result = true;
-    logger.info("Read config file:"+filename);
+    logger.info("Read config file:"+filepath);
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder db = null;
     try {
       db = dbf.newDocumentBuilder();
-      Document doc = db.parse(filename);
+      Document doc = db.parse(filepath);
       result = fromDocument(doc);
     } catch (ParserConfigurationException e) {
       logger.error(e);
@@ -57,10 +60,10 @@ public class DeployConfig {
   
   public boolean fromDocument(Document document) {
     boolean result = true;
-    NodeList databasesList = document.getElementsByTagName(C.servers);
+    NodeList serversList = document.getElementsByTagName(C.servers);
     NodeList tasksList = document.getElementsByTagName(C.tasks);
-    for (int i=0; i<databasesList.getLength(); i++) {
-      result = result && servers.fromElement((Element)databasesList.item(i));
+    for (int i=0; i<serversList.getLength(); i++) {
+      result = result && servers.fromElement((Element)serversList.item(i));
     }
     for (int i=0; i<tasksList.getLength(); i++) {
       result = result && tasks.fromElement((Element)tasksList.item(i));

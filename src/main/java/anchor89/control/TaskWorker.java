@@ -27,12 +27,14 @@ import anchor89.util.DbPool;
 public class TaskWorker implements Callable<Integer> {
   final private static Logger logger = LogManager.getLogger(TaskWorker.class);
   
-  private Server server = null;
-  private String dbName = null;
-  private List<String> sqls = null;
-
+  private Server server = null; // Which server will connect to
+  private String dbName = null; // Which database will connect to 
+  private List<String> sqls = null; // Which sqls will be executed
+  private boolean dummy = true; // True:  Try to establish connection only 
+                                //        and do not execute sqls
+                                // False: Execute sqls
   
-  public static List<TaskWorker> configRunners(DeployConfig config, String taskId, boolean undo) {
+  public static List<TaskWorker> configRunners(DeployConfig config, String taskId, boolean undo, boolean dummy) {
     List<TaskWorker> result = new ArrayList<TaskWorker>();
     boolean flag = true;
     
@@ -44,7 +46,7 @@ public class TaskWorker implements Callable<Integer> {
     
     for (Server server : servers) {
       for (String dbName : dbNames) {
-        result.add(new TaskWorker(server, dbName, sqls));
+        result.add(new TaskWorker(server, dbName, sqls, dummy));
       }
     }
     
@@ -81,7 +83,7 @@ public class TaskWorker implements Callable<Integer> {
     return result;
   }
   
-  public TaskWorker(Server server, String dbName, List<String> sqls) {
+  public TaskWorker(Server server, String dbName, List<String> sqls, boolean dummy) {
     this.server = server;
     this.dbName = dbName;
     this.sqls = sqls;
@@ -94,28 +96,37 @@ public class TaskWorker implements Callable<Integer> {
   public Integer call() {
     Integer result = 0;
     Connection connection = DbPool.connection(server, dbName);
-    if (connection == null) {
-      logger.error("Can not connect to %s.%s", server.getId(), dbName);
-      return result;
-    }
     
-    logger.info("Start work on %s.%s with %d sqls", server.getId(), dbName, sqls.size());
-    
-    Statement statement = null;
-    try {
-      for (String sql : sqls) {
-        statement.executeUpdate(sql);
-        result++;
-      }
-    } catch (SQLException e) {
-      logger.error(e);
-    }
+    if (dummy) {
+      result = connection != null? 1:0;
+    } else {
+      if (connection == null) {
+        logger.error("Can not connect to %s.%s", server.getId(), dbName);
+      } else {
+        logger.info("Start work on %s.%s with %d sqls", server.getId(), dbName, sqls.size());
+        
+        try {
+          Statement statement = connection.createStatement();
+          for (String sql : sqls) {
+            statement.executeUpdate(sql);
+            result++;
+          }
+        } catch (SQLException e) {
+          logger.error(e);
+        } finally {
+          try {
+            connection.close();
+          } catch (SQLException e) {
+            logger.error(e);
+          }
+        }
 
-    if (result < sqls.size()) {
-      logger.error("Only complete %d/%d on %s.%s", result, sqls.size(), server.getId(), dbName);
-      result = -result;
-    }
-    
+        if (result < sqls.size()) {
+          logger.error("Only complete %d/%d on %s.%s", result, sqls.size(), server.getId(), dbName);
+          result = -result;
+        }              
+      }
+    }    
     return result;
   }
   

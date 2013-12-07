@@ -14,17 +14,18 @@ import anchor89.entry.DeployConfig;
 import anchor89.entry.Server;
 import anchor89.entry.Task;
 import anchor89.util.C;
+import anchor89.util.MultiMap;
 import anchor89.util.U;
 
 public class Master {
   final private static Logger logger = LogManager.getLogger(Master.class);
   
   private DeployConfig config = null;
+  private MultiMap<String, String> arguments = null;
   private List<String> taskIds = null;
-  
-  public Master(DeployConfig config, List<String> taskIds) {
+  public Master(DeployConfig config, MultiMap<String, String> arguments) {
     this.config = config;
-    this.taskIds = taskIds;    
+    this.arguments = arguments;
   }
   
   public boolean run() {
@@ -45,7 +46,8 @@ public class Master {
   
   private boolean workOne(String taskId, boolean undo) {
     boolean result = true;
-    List<TaskWorker> workers = TaskWorker.configRunners(config, taskId, undo);
+    boolean dummy = arguments.get(C.dummyF).equals(C.argTrue);
+    List<TaskWorker> workers = TaskWorker.configRunners(config, taskId, undo, dummy);
     List<Future<Integer>> workouts = new ArrayList<Future<Integer>>();
     ExecutorService ex = Executors.newFixedThreadPool(C.currentWorkers);
 

@@ -32,6 +32,7 @@ public class Task implements GenerateFromElement {
     for (int i=0; i<sqlList.getLength(); i++) {
       Sql sql = new Sql();
       result = result && sql.fromElement((Element)sqlList.item(i));
+      this.sqls.add(sql);
     }
     result = result && !U.hasNull(id, targetServer, targetDatabase);
     if (U.hasNull(id, targetServer, targetDatabase)) {
@@ -54,5 +55,10 @@ public class Task implements GenerateFromElement {
 
   public List<Sql> getSqls() {
     return sqls;
+  }
+  
+  @Override
+  public String toString() {
+    return String.format("Id:%s, Target-server:%s, Target-database:%s, #Sqls:%d", id, targetServer, targetDatabase, sqls.size());
   }
 }

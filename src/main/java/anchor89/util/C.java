@@ -25,8 +25,8 @@ public class C {
   public static final String password = "password";
   public static final String tasks = "tasks";
   public static final String task = "task";
-  public static final String targetServer = "server";
-  public static final String targetDatabase = "database";
+  public static final String targetServer = "target-server";
+  public static final String targetDatabase = "target-database";
   public static final String sql = "sql";
   public static final String doSql = "do";
   public static final String undoSql = "undo";
@@ -38,10 +38,14 @@ public class C {
    *  for full names: varF. 
    * 
    */
+  public static final String argTrue = "T";
+  public static final String argFalse = "F";
   public static final String fileS = "f";
   public static final String fileF = "file";
   public static final String taskS = "t";
   public static final String taskF = "task";
+  public static final String dummyS = "d";
+  public static final String dummyF = "dummy";
   public static final Map<String, String> shortToFull = new HashMap<String, String>();
   public static final Set<String> validNames = new HashSet<String>();
   static {
@@ -49,9 +53,12 @@ public class C {
     validNames.add(fileF);
     validNames.add(taskS);
     validNames.add(taskF);
+    validNames.add(dummyS);
+    validNames.add(dummyF);
     
     shortToFull.put(fileS, fileF);
     shortToFull.put(taskS, taskF);
+    shortToFull.put(dummyS, dummyF);    
   }  
   
   public static final String separator = ",";

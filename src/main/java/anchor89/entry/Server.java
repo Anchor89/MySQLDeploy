@@ -40,7 +40,7 @@ public class Server implements GenerateFromElement {
     port = X.getFirstChildText(ele, C.port, null);
     user = X.getFirstChildText(ele, C.user, null);
     password = X.getFirstChildText(ele, C.password, null);
-    result = U.hasNull(id, ip, port, user, password);
+    result = !U.hasNull(id, ip, port, user, password);
     if (!result) {
       logger.error("Error in parsing <server>:" + ele.toString());
     }

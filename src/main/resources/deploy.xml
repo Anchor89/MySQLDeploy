@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Description: This document instruct how MySqlDeploy run. First let me 
+	shoul you the dom structure: -1- means contain only one element. -*- means 
+	contain any number element |-1-<databases> | |-*-<database id="" type=""> 
+	| |-1-<ip> | |-1-<port> | |-1-<dbname> | |-1-<user> | |-1-<password> |-1-<tasks> 
+	|-*-<task id="" target-database="" connect-database=""> |-*-<sql> |-1-<do> 
+	|-1-<undo> There are two sections in this file respectively <databases> and 
+	<tasks> <databases> has any number of children <database> which describe 
+	the connection info of a database. <database> has two attribute: id and type. 
+	* Id is the identifier of this database. Id is required and should be unique 
+	within <databases>. * Type tells the type of sql server:"mysql","sqlserver" 
+	etc. Since this project only support mysql for now, type is optional and 
+	default to "mysql". <database> has following children <ip>, <port>, <dbname>, 
+	<user> and <password>. As you see, this program will use the account info 
+	trying to connect to jdbc:mysql://ip:port/dbname. <tasks> has any number 
+	of children <task> which describe how SQLs should be executed. <task> has 
+	three attribute id, target-database and connect-database. Id and target-database 
+	is required while connect-database is optional. * Id is the identifier of 
+	this task and should be unique within <tasks>. This is required. * Target-database 
+	is the list of on which databases this task should be run. The list of databases 
+	use comma as separator. This is required. * Connect-database is the override 
+	info of the <dbname> of the corresponding <database> specified in target-database. 
+	This is used when you try to create database through an exsiting database. 
+	<task> has any number of children <sql>. All the <sql> under this task will 
+	be executed on the target-database. <sql> has two children <do> and <undo>. 
+	The sql in <do> and <undo> are opposite operations. For e.g. <do> is creating 
+	a table, then <undo> in the same <sql> is dropping this table. -->
+
+<deploy>
+	<servers>
+		<server id="metadb" type="mysql">
+			<ip>10.10.106.11</ip>
+			<port>3306</port>
+			<user>root</user>
+			<password>111111</password>
+		</server>
+	</servers>
+	<tasks>
+		<task id="createDb" target-server="metadb" target-database="mysql">
+			<sql>
+				<do>create database testDeploy</do>
+				<undo>drop database testDeploy</undo>
+			</sql>
+		</task>
+		<task id="createTables" target-server="metadb" target-database="testDeploy">
+      <sql>
+        <do>create table students(id int not null, name varchar(255) not null)</do>
+        <undo>drop table students</undo>
+      </sql>
+      <sql>
+        <do>alter table students add primary key (id)</do>
+        <undo>alter table students drop primay key</undo>
+      </sql>
+      <sql>
+        <do>create table professors(id int, name varchar(255))</do>
+        <undo>drop table professors</undo>
+      </sql>
+      <sql>
+        <do>alter table professors add primary key (id)</do>
+        <undo>alter table professors drop primay key</undo>
+      </sql>
+		</task>
+		<task id="initData" target-server="metadb" target-database="testDeploy">
+		  <sql>
+		    <do>insert into students values(1, "wangmeng")</do>
+		    <undo>delete from students where id=1</undo>
+		  </sql>
+		  <sql>
+		    <do>insert into professors values(1, "zhangcheng")</do>
+		    <undo>delete from professors where id=1</undo>
+		  </sql>
+		</task>
+	</tasks>
+</deploy>
