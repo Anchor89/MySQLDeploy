@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import anchor89.arguments.Arguments;
 import anchor89.entry.DeployConfig;
 import anchor89.entry.Server;
 import anchor89.entry.Task;
@@ -21,19 +22,15 @@ public class Master {
   final private static Logger logger = LogManager.getLogger(Master.class);
   
   private DeployConfig config = null;
-  private MultiMap<String, String> arguments = null;
   private List<String> taskIds = null;
-  public Master(DeployConfig config, MultiMap<String, String> arguments) {
+
+  public Master(DeployConfig config) {
     this.config = config;
-    this.arguments = arguments;
+    taskIds = Arguments.get("task").values();
   }
   
   public boolean run() {
-    return workAll(false);
-  }
-  
-  public boolean rollback() {
-    return workAll(true);
+    return workAll(Arguments.get(Arguments.revert).isTrue());
   }
   
   private boolean workAll(boolean undo) {
@@ -46,8 +43,7 @@ public class Master {
   
   private boolean workOne(String taskId, boolean undo) {
     boolean result = true;
-    boolean dummy = arguments.get(C.dummyF).equals(C.argTrue);
-    List<TaskWorker> workers = TaskWorker.configRunners(config, taskId, undo, dummy);
+    List<TaskWorker> workers = TaskWorker.configRunners(config, taskId, undo);
     List<Future<Integer>> workouts = new ArrayList<Future<Integer>>();
     ExecutorService ex = Executors.newFixedThreadPool(C.currentWorkers);
 
@@ -58,7 +54,7 @@ public class Master {
     try {
       ex.awaitTermination(C.timeout, C.timeoutUnit);
     } catch (InterruptedException e) {
-      logger.error("Timeout on task:%s.", taskId);
+      logger.error(String.format("Timeout on task:%s.", taskId));
       logger.error(e);
     }
 

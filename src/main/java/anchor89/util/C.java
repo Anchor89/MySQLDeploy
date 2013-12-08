@@ -31,35 +31,7 @@ public class C {
   public static final String doSql = "do";
   public static final String undoSql = "undo";
   
-  /**
-   * Arguments' short names and full names;
-   * Var name format:
-   *  for short names: varS;
-   *  for full names: varF. 
-   * 
-   */
-  public static final String argTrue = "T";
-  public static final String argFalse = "F";
-  public static final String fileS = "f";
-  public static final String fileF = "file";
-  public static final String taskS = "t";
-  public static final String taskF = "task";
-  public static final String dummyS = "d";
-  public static final String dummyF = "dummy";
-  public static final Map<String, String> shortToFull = new HashMap<String, String>();
-  public static final Set<String> validNames = new HashSet<String>();
-  static {
-    validNames.add(fileS);
-    validNames.add(fileF);
-    validNames.add(taskS);
-    validNames.add(taskF);
-    validNames.add(dummyS);
-    validNames.add(dummyF);
-    
-    shortToFull.put(fileS, fileF);
-    shortToFull.put(taskS, taskF);
-    shortToFull.put(dummyS, dummyF);    
-  }  
+
   
   public static final String separator = ",";
   

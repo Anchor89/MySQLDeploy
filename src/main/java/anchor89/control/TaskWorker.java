@@ -6,12 +6,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import anchor89.arguments.Arguments;
 import anchor89.entry.DeployConfig;
 import anchor89.entry.Server;
 import anchor89.entry.Sql;
@@ -33,8 +35,10 @@ public class TaskWorker implements Callable<Integer> {
   private boolean dummy = true; // True:  Try to establish connection only 
                                 //        and do not execute sqls
                                 // False: Execute sqls
+  private boolean verbose = false;  // True: Display info about every sql execution.
+                                    // False: Otherwise.
   
-  public static List<TaskWorker> configRunners(DeployConfig config, String taskId, boolean undo, boolean dummy) {
+  public static List<TaskWorker> configRunners(DeployConfig config, String taskId, boolean undo) {
     List<TaskWorker> result = new ArrayList<TaskWorker>();
     boolean flag = true;
     
@@ -46,7 +50,7 @@ public class TaskWorker implements Callable<Integer> {
     
     for (Server server : servers) {
       for (String dbName : dbNames) {
-        result.add(new TaskWorker(server, dbName, sqls, dummy));
+        result.add(new TaskWorker(server, dbName, sqls));
       }
     }
     
@@ -80,13 +84,18 @@ public class TaskWorker implements Callable<Integer> {
     for (Sql sql : sqls) {
       result.add(undo? sql.getUndoSql():sql.getDoSql());
     }
+    if (undo) {
+      Collections.reverse(result);
+    }
     return result;
   }
   
-  public TaskWorker(Server server, String dbName, List<String> sqls, boolean dummy) {
+  public TaskWorker(Server server, String dbName, List<String> sqls) {
     this.server = server;
     this.dbName = dbName;
     this.sqls = sqls;
+    this.dummy = Arguments.get(Arguments.dummy).isTrue();
+    this.verbose = Arguments.get(Arguments.verbose).isTrue();
   }
   
   /**
@@ -96,22 +105,31 @@ public class TaskWorker implements Callable<Integer> {
   public Integer call() {
     Integer result = 0;
     Connection connection = DbPool.connection(server, dbName);
-    
+    if (connection != null) {
+      onVerbose("Can not obtain connection to %s.%s", server.getId(), dbName);
+    } else {
+      onVerbose("Obtain connection to %s.%s", server.getId(), dbName);
+    }
+
     if (dummy) {
       result = connection != null? 1:0;
     } else {
       if (connection == null) {
-        logger.error("Can not connect to %s.%s", server.getId(), dbName);
+        logger.error(String.format("Can not connect to %s.%s", server.getId(), dbName));
       } else {
-        logger.info("Start work on %s.%s with %d sqls", server.getId(), dbName, sqls.size());
+        logger.info(String.format("Start work on %s.%s with %d sqls", server.getId(), dbName, sqls.size()));
         
+        String sql = null;
         try {
           Statement statement = connection.createStatement();
-          for (String sql : sqls) {
-            statement.executeUpdate(sql);
+          for (int i=0; i<sqls.size(); i++) {
+            sql = sqls.get(i);
+            int ret = statement.executeUpdate(sql);
+            onVerbose("Executed \"%s\", update %d rows", sql, ret);
             result++;
           }
         } catch (SQLException e) {
+          logger.info("Failed in executed \"" + sql + "\"");
           logger.error(e);
         } finally {
           try {
@@ -122,12 +140,18 @@ public class TaskWorker implements Callable<Integer> {
         }
 
         if (result < sqls.size()) {
-          logger.error("Only complete %d/%d on %s.%s", result, sqls.size(), server.getId(), dbName);
+          logger.error(String.format("Only complete %d/%d on %s.%s", result, sqls.size(), server.getId(), dbName));
           result = -result;
         }              
       }
     }    
     return result;
+  }
+  
+  protected void onVerbose(String format, Object... objs) {
+    if (verbose) {
+      logger.info(String.format(format, objs));
+    }
   }
   
 }

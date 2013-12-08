@@ -28,7 +28,8 @@ public class DbPool {
   public static Connection connection(Server server, String dbName) {
     Connection result = null;
     try {
-      result = DriverManager.getConnection(server.getUrl(dbName), server.getUser(), server.getUser());
+      result = DriverManager.getConnection(server.getUrl(dbName), server.getUser(), server.getPassword());
+      logger.debug(result);
     } catch (SQLException e) {
       logger.error("Error in get connection for Server:" + server.getId() + " Database:" + dbName);
       logger.error(e);
