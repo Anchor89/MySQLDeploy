@@ -105,7 +105,7 @@ public class TaskWorker implements Callable<Integer> {
   public Integer call() {
     Integer result = 0;
     Connection connection = DbPool.connection(server, dbName);
-    if (connection != null) {
+    if (connection == null) {
       onVerbose("Can not obtain connection to %s.%s", server.getId(), dbName);
     } else {
       onVerbose("Obtain connection to %s.%s", server.getId(), dbName);
