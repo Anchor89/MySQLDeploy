@@ -33,10 +33,10 @@ public class Main {
     }
     logger.info(Arguments.showString());
     
-    String dir = FileHelper.getRootPath();
+    //String dir = FileHelper.getRootPath();
     String filename = Arguments.get(Arguments.file).value(0); 
-    String path = filename.contains(File.separator)? filename:dir+filename;
-    DeployConfig config = new DeployConfig(path);
+    //String path = filename.contains(File.separator)? filename:dir+filename;
+    DeployConfig config = new DeployConfig(filename);
     Master master = new Master(config);
     master.run();
   }
