@@ -30,6 +30,23 @@ public class Arguments {
   public static Map<String, String> shortToFull = new HashMap<String, String>();
   public static Map<String, Argument> arguments = new HashMap<String, Argument>();
   
+  public static String helpArgs() {
+    StringBuilder help = new StringBuilder("Arguments:\n");
+    String line = null;
+    Set<Argument> all = new HashSet<Argument>();
+    all.add(new ArgDummy());
+    all.add(new ArgFile());
+    all.add(new ArgRevert());
+    all.add(new ArgTask());
+    all.add(new ArgVerbose());
+    for (Argument arg : all) {
+      line = arg.valueFormat() == null? String.format("\t-%s,--%s: %s\n", arg.shortKey(), arg.fullKey(), arg.description()):
+        String.format("\t-%s,--%s=%s: %s\n", arg.shortKey(), arg.fullKey(), arg.valueFormat(), arg.description());
+      help.append(line);
+    }
+    return help.toString();
+  }
+  
   public static String helpInfo() {
     StringBuilder help = new StringBuilder("Arguments:\n");
     String line = null;

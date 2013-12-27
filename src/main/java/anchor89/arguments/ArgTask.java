@@ -64,11 +64,16 @@ public class ArgTask extends Argument {
   @Override
   public List<String> values() {
     logger.debug(this.hashCode());
-    logger.debug(value.length);
-    for (String v : value){
-      logger.debug(v);
+    if (value != null) {
+      logger.debug(value.length);
+      for (String v : value){
+        logger.debug(v);
+      }
+      return Arrays.asList(value);
+    } else {
+      return new ArrayList<String>();
     }
-    return Arrays.asList(value);
+
   }
 
   @Override

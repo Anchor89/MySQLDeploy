@@ -29,7 +29,8 @@ public class Main {
   public static void main(String[] args) {
     Arguments.processArguments(args);
     if (!Arguments.argumentsValid()) {
-      Arguments.helpInfo();
+      logger.fatal(Arguments.helpArgs());
+      return;
     }
     logger.info(Arguments.showString());
     
