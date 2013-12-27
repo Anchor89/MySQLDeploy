@@ -56,7 +56,7 @@ public class Server implements GenerateFromElement {
   
   public String getUrl(String dbName) {
     if (type.equalsIgnoreCase("mysql")) {
-      return String.format("jdbc:mysql://%s:%s/%s", ip, port, dbName);
+      return String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&characterEncoding=utf8", ip, port, dbName);
     } else {
       return "";
     }    

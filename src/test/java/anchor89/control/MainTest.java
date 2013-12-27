@@ -17,10 +17,10 @@ public class MainTest extends Main{
   public void test() {
     String[] args = new String[4];
     args[0] = "-fsample.xml";
-    args[1] = "-tcreateDb,createTables,initData";
+    args[1] = "-tCreate_Database,Create_Table,Insert_Data";
     args[2] = "-v";
-    args[3] = "-d";
-//    Main.main(args);
+//    args[3] = "-r";
+    Main.main(args);
   }
 
 }

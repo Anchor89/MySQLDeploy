@@ -18,29 +18,31 @@ public class DeployConfigTest {
   
   @Test
   public void test() {
-    String filename = "deploy.xml";
+    String filename = "sample.xml";
     String path = FileHelper.getRootPath();
     DeployConfig config = new DeployConfig(path + filename);
-    Server server = config.getServers().getServerById("metadb");
+    Server server = config.getServers().getServerById("Legal_Test");
     logger.debug(server);
     assertNotNull(server);
-    assertEquals("10.10.106.11", server.getIp());
+    assertEquals("10.10.142.2", server.getIp());
     assertEquals("3306", server.getPort());
-    assertEquals("root", server.getUser());
+    assertEquals("law", server.getUser());
     assertEquals("111111", server.getPassword());
     Tasks tasks = config.getTasks();
     assertNotNull(tasks);
     Task task = null;
-    task = tasks.getTaskById("createDb");
+    task = tasks.getTaskById("Create_Database");
     logger.debug(task);
     assertNotNull(task);
     
-    task = tasks.getTaskById("createTables");
+    task = tasks.getTaskById("Create_Table");
     logger.debug(task);
     assertNotNull(task);
     
-    task = tasks.getTaskById("initData");
+    task = tasks.getTaskById("Insert_Data");
     logger.debug(task);
     assertNotNull(task);
+    
+    logger.debug(task.getSqls().get(0).getDoSql());
   }
 }
